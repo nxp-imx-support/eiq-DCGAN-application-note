@@ -1,0 +1,54 @@
+diff --git a/dcgan/dcgan.py b/dcgan/dcgan.py
+index 38c369e..b579eb9 100644
+--- a/dcgan/dcgan.py
++++ b/dcgan/dcgan.py
+@@ -11,6 +11,7 @@ from keras.optimizers import Adam
+ import matplotlib.pyplot as plt
+ 
+ import sys
++import os
+ 
+ import numpy as np
+ 
+@@ -23,6 +24,7 @@ class DCGAN():
+         self.img_shape = (self.img_rows, self.img_cols, self.channels)
+         self.latent_dim = 100
+ 
++        self.model_save_dir = 'saved_model/'
+         optimizer = Adam(0.0002, 0.5)
+ 
+         # Build and compile the discriminator
+@@ -149,6 +151,10 @@ class DCGAN():
+             if epoch % save_interval == 0:
+                 self.save_imgs(epoch)
+ 
++            if epoch != 0 and epoch % save_interval == 0:
++                self.save_models()
++
++
+     def save_imgs(self, epoch):
+         r, c = 5, 5
+         noise = np.random.normal(0, 1, (r * c, self.latent_dim))
+@@ -167,7 +173,21 @@ class DCGAN():
+         fig.savefig("images/mnist_%d.png" % epoch)
+         plt.close()
+ 
++    def save_models(self):
++        self.save_model(self.discriminator,
++                        os.path.join(self.model_save_dir, 'discriminator_model'))
++        self.save_model(self.generator,
++                        os.path.join(self.model_save_dir, 'generator_model'))
++        self.save_model(self.combined,
++                        os.path.join(self.model_save_dir, 'combined_model'))
++
++    def save_model(self, model, model_path):
++        with open(str(model_path) + '.json', 'w') as json_file:
++            json_file.write(model.to_json())
++
++        model.save(str(model_path + '.h5'))
++
+ 
+ if __name__ == '__main__':
+     dcgan = DCGAN()
+-    dcgan.train(epochs=4000, batch_size=32, save_interval=50)
++    dcgan.train(epochs=14000, batch_size=32, save_interval=50)
